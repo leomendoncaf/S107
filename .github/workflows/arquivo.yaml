@@ -1,0 +1,66 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v2
+
+      - name: Configurar ambiente Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+
+      - name: Compilar
+        run: mvn compile
+
+      - name: Executar testes
+        run: mvn test
+
+  build_and_package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v2
+
+      - name: Configurar ambiente Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+
+      - name: Compilar e empacotar
+        run: mvn package
+
+      - name: Salvar artefatos
+        uses: actions/upload-artifact@v2
+        with:
+          name: pacote
+          path: target/
+
+  send_notification:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v2
+
+      - name: Enviar notificação
+        run: |
+          echo "Pipeline executado!" > message.txt
+          echo "Informações adicionais do pipeline aqui." >> message.txt
+          echo "::set-env name=MAIL_BODY::$(cat message.txt)"
+
+      - name: Enviar e-mail
+        run: |
+          echo "$MAIL_BODY" | mail -s "Notificação do Pipeline" mendoncawho@outlook.com
